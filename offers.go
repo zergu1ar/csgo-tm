@@ -9,11 +9,13 @@ type (
 		Success bool   `json:"success"`
 		Hash    string `json:"hash"`
 		Offer   Offer  `json:"offer"`
+		Error   string  `json:"error"`
 	}
 	TradeRequestGiveP2PAllResponse struct {
 		Success bool    `json:"success"`
 		Hash    string  `json:"hash"`
 		Offers  []Offer `json:"offers"`
+		Error   string  `json:"error"`
 	}
 	TradesResponse struct {
 		Success bool    `json:"success"`
