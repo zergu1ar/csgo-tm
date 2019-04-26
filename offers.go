@@ -28,7 +28,7 @@ type (
 		Timestamp int    `json:"timestamp"`
 	}
 	Offer struct {
-		Partner           int         `json:"partner"`
+		Partner           string      `json:"partner"`
 		Token             string      `json:"token"`
 		TradeOfferMessage string      `json:"tradeoffermessage"`
 		Items             []TradeItem `json:"items"`
