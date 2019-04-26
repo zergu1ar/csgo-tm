@@ -51,15 +51,14 @@ func (mc *MarketClient) doRequest(uri, extraParamsString string) (error, []byte)
 	if err != nil {
 		return err, nil
 	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return errors.New(res.Status), nil
+	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return err, nil
 	}
-	err = res.Body.Close()
-	if err != nil {
-		return err, nil
-	}
-
 	return nil, body
 }
 
