@@ -52,12 +52,12 @@ func (mc *MarketClient) doRequest(uri, extraParamsString string) (error, []byte)
 		return err, nil
 	}
 	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		return errors.New(res.Status), nil
-	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return err, nil
+	}
+	if res.StatusCode != 200 {
+		return errors.New(res.Status + body), nil
 	}
 	return nil, body
 }
