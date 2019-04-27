@@ -57,7 +57,7 @@ func (mc *MarketClient) doRequest(uri, extraParamsString string) (error, []byte)
 		return err, nil
 	}
 	if res.StatusCode != 200 {
-		return errors.New(res.Status + body), nil
+		return errors.New(res.Status + string(body)), nil
 	}
 	return nil, body
 }
