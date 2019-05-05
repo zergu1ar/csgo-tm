@@ -22,10 +22,16 @@ type (
 		Success bool   `json:"success"`
 		Ping    string `json:"ping"`
 	}
+
+	WSResponse struct {
+		Auth    string `json:"wsAuth"`
+		Success bool   `json:"success"`
+	}
 )
 
 const (
-	ApiURL      = "https://market.csgo.com/api/v2/%s?key=%s&%s"
+	ApiV2Url    = "https://market.csgo.com/api/v2/%s?key=%s&%s"
+	ApiV1Url    = "https://market.csgo.com/api/GetWSAuth/?key=%s"
 	CurrencyRUB = "RUB"
 	CurrencyUSD = "USD"
 	CurrencyEUR = "EUR"
@@ -44,7 +50,7 @@ func NewClient(apiKey string, currency string) *MarketClient {
 }
 
 func (mc *MarketClient) doRequest(uri, extraParamsString string) (error, []byte) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(ApiURL, uri, mc.ApiKey, extraParamsString), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(ApiV2Url, uri, mc.ApiKey, extraParamsString), nil)
 	client := http.DefaultClient
 
 	res, err := client.Do(req)
@@ -88,4 +94,31 @@ func (mc *MarketClient) doPing() error {
 		return errors.New("invalid ping answer")
 	}
 	return nil
+}
+
+func (mc *MarketClient) GetWSToken() (error, string) {
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf(ApiV1Url, mc.ApiKey), nil)
+	client := http.DefaultClient
+
+	res, err := client.Do(req)
+	if err != nil {
+		return err, ""
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err, ""
+	}
+	if res.StatusCode != 200 {
+		return errors.New(res.Status + string(body)), ""
+	}
+	resp := WSResponse{}
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		return nil, ""
+	}
+	if !resp.Success {
+		return errors.New("failed to get ws auth"), ""
+	}
+	return nil, resp.Auth
 }
