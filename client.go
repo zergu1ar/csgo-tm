@@ -37,7 +37,7 @@ const (
 	CurrencyEUR = "EUR"
 )
 
-func NewClient(apiKey string, currency string) *MarketClient {
+func NewClient(apiKey string, currency string, autoPing bool) *MarketClient {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := &MarketClient{
 		ApiKey:   apiKey,
@@ -45,7 +45,9 @@ func NewClient(apiKey string, currency string) *MarketClient {
 		Destroy:  cancel,
 		currency: currency,
 	}
-	go client.pingHandler()
+	if autoPing {
+		go client.pingHandler()
+	}
 	return client
 }
 
