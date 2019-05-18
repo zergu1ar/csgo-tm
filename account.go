@@ -31,7 +31,7 @@ type (
 )
 
 func (mc *MarketClient) GetMoney() (error, *GetMoneyResponse) {
-	err, body := mc.doRequest("get-money", "")
+	err, body := mc.doRequest("get-money", "", true)
 	if err != nil {
 		return err, nil
 	}
@@ -41,7 +41,7 @@ func (mc *MarketClient) GetMoney() (error, *GetMoneyResponse) {
 }
 
 func (mc *MarketClient) GoOffline() (error, *GoOfflineResponse) {
-	err, body := mc.doRequest("go-offline", "")
+	err, body := mc.doRequest("go-offline", "", true)
 	if err != nil {
 		return err, nil
 	}
@@ -51,7 +51,7 @@ func (mc *MarketClient) GoOffline() (error, *GoOfflineResponse) {
 }
 
 func (mc *MarketClient) UpdateInventory() (error, *UpdateInventoryResponse) {
-	err, body := mc.doRequest("update-inventory", "")
+	err, body := mc.doRequest("update-inventory", "", true)
 	if err != nil {
 		return err, nil
 	}
@@ -61,7 +61,7 @@ func (mc *MarketClient) UpdateInventory() (error, *UpdateInventoryResponse) {
 }
 
 func (mc *MarketClient) MyInventory() (error, *MyInventoryResponse) {
-	err, body := mc.doRequest("my-inventory/", "")
+	err, body := mc.doRequest("my-inventory/", "", true)
 	if err != nil {
 		return err, nil
 	}

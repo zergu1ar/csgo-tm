@@ -9,7 +9,7 @@ type (
 		Success bool   `json:"success"`
 		Hash    string `json:"hash"`
 		Offer   Offer  `json:"offer"`
-		Error   string  `json:"error"`
+		Error   string `json:"error"`
 	}
 	TradeRequestGiveP2PAllResponse struct {
 		Success bool    `json:"success"`
@@ -42,7 +42,7 @@ type (
 )
 
 func (mc *MarketClient) TradeRequestGiveP2P() (error, *TradeRequestGiveP2PResponse) {
-	err, body := mc.doRequest("trade-request-give-p2p", "")
+	err, body := mc.doRequest("trade-request-give-p2p", "", true)
 	if err != nil {
 		return err, nil
 	}
@@ -52,7 +52,7 @@ func (mc *MarketClient) TradeRequestGiveP2P() (error, *TradeRequestGiveP2PRespon
 }
 
 func (mc *MarketClient) TradeRequestGiveP2PAll() (error, *TradeRequestGiveP2PAllResponse) {
-	err, body := mc.doRequest("trade-request-give-p2p-all", "")
+	err, body := mc.doRequest("trade-request-give-p2p-all", "", true)
 	if err != nil {
 		return err, nil
 	}
@@ -62,7 +62,7 @@ func (mc *MarketClient) TradeRequestGiveP2PAll() (error, *TradeRequestGiveP2PAll
 }
 
 func (mc *MarketClient) Trades() (error, *TradesResponse) {
-	err, body := mc.doRequest("trades", "")
+	err, body := mc.doRequest("trades", "", true)
 	if err != nil {
 		return err, nil
 	}
