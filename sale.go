@@ -16,7 +16,7 @@ type (
 
 func (mc *MarketClient) AddToSale(item InventoryItem, price float64) (error, *AddToSaleResponse) {
 	extraParams := "id=%s&price=%d&cur=%s"
-	err, body := mc.doRequest("add-to-sale", fmt.Sprintf(extraParams, item.Id, int(math.Round(price))*100, mc.currency))
+	err, body := mc.doRequest("add-to-sale", fmt.Sprintf(extraParams, item.Id, int(math.Round(price))*100, mc.currency), true)
 	if err != nil {
 		return err, nil
 	}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -12,12 +13,22 @@ import (
 
 type (
 	MarketClient struct {
-		ApiKey   string
-		ctx      context.Context
-		Destroy  func()
-		currency string
+		ApiKey        string
+		ctx           context.Context
+		Destroy       func()
+		currency      string
+		requestsQueue chan RequestItem
 	}
-
+	RequestItem struct {
+		Url          string
+		Body         io.Reader
+		ResponseChan chan RequestResponse
+	}
+	RequestResponse struct {
+		Error  error
+		Body   []byte
+		Status int
+	}
 	PingResponse struct {
 		Success bool   `json:"success"`
 		Ping    string `json:"ping"`
@@ -31,7 +42,7 @@ type (
 
 const (
 	ApiV2Url    = "https://market.csgo.com/api/v2/%s?key=%s&%s"
-	ApiV1Url    = "https://market.csgo.com/api/GetWSAuth/?key=%s"
+	ApiV1Url    = "https://market.csgo.com/api/%s/?key=%s&%s"
 	CurrencyRUB = "RUB"
 	CurrencyUSD = "USD"
 	CurrencyEUR = "EUR"
@@ -40,10 +51,11 @@ const (
 func NewClient(apiKey string, currency string, autoPing bool) *MarketClient {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := &MarketClient{
-		ApiKey:   apiKey,
-		ctx:      ctx,
-		Destroy:  cancel,
-		currency: currency,
+		ApiKey:        apiKey,
+		ctx:           ctx,
+		Destroy:       cancel,
+		currency:      currency,
+		requestsQueue: make(chan RequestItem, 100),
 	}
 	if autoPing {
 		go client.pingHandler()
@@ -51,23 +63,66 @@ func NewClient(apiKey string, currency string, autoPing bool) *MarketClient {
 	return client
 }
 
-func (mc *MarketClient) doRequest(uri, extraParamsString string) (error, []byte) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(ApiV2Url, uri, mc.ApiKey, extraParamsString), nil)
+func (mc *MarketClient) doRequest(uri, extraParamsString string, apiV2 bool) (error, []byte) {
+	var baseUrl string
+	if apiV2 {
+		baseUrl = ApiV2Url
+	} else {
+		baseUrl = ApiV1Url
+	}
+
+	req := RequestItem{
+		Url:          fmt.Sprintf(baseUrl, uri, mc.ApiKey, extraParamsString),
+		Body:         nil,
+		ResponseChan: make(chan RequestResponse),
+	}
+
+	mc.requestsQueue <- req
+
+	res := <-req.ResponseChan
+
+	return res.Error, res.Body
+}
+
+func (mc *MarketClient) requestsWorker() {
+	for {
+		select {
+		case req := <-mc.requestsQueue:
+			req.ResponseChan <- mc.doSyncRequest(req.Url, req.Body)
+			time.Sleep(time.Second)
+		}
+	}
+}
+
+func (mc *MarketClient) doSyncRequest(url string, body io.Reader) RequestResponse {
+	req, err := http.NewRequest(http.MethodGet, url, body)
 	client := http.DefaultClient
 
 	res, err := client.Do(req)
 	if err != nil {
-		return err, nil
+		return RequestResponse{
+			Status: res.StatusCode,
+			Error:  err,
+		}
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return err, nil
+		return RequestResponse{
+			Status: res.StatusCode,
+			Error:  err,
+		}
 	}
 	if res.StatusCode != 200 {
-		return errors.New(res.Status + string(body)), nil
+		return RequestResponse{
+			Status: res.StatusCode,
+			Error:  errors.New(res.Status + string(resBody)),
+		}
 	}
-	return nil, body
+	return RequestResponse{
+		Body:   resBody,
+		Status: res.StatusCode,
+	}
 }
 
 func (mc *MarketClient) pingHandler() {
@@ -77,13 +132,13 @@ func (mc *MarketClient) pingHandler() {
 		case <-mc.ctx.Done():
 			return
 		case <-tick.C:
-			mc.doPing()
+			_ = mc.Ping()
 		}
 	}
 }
 
-func (mc *MarketClient) doPing() error {
-	err, body := mc.doRequest("ping", "")
+func (mc *MarketClient) Ping() error {
+	err, body := mc.doRequest("ping", "", true)
 	if err != nil {
 		return err
 	}
@@ -99,20 +154,9 @@ func (mc *MarketClient) doPing() error {
 }
 
 func (mc *MarketClient) GetWSToken() (error, string) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf(ApiV1Url, mc.ApiKey), nil)
-	client := http.DefaultClient
-
-	res, err := client.Do(req)
+	err, body := mc.doRequest("GetWSAuth", "", false)
 	if err != nil {
 		return err, ""
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return err, ""
-	}
-	if res.StatusCode != 200 {
-		return errors.New(res.Status + string(body)), ""
 	}
 	resp := WSResponse{}
 	err = json.Unmarshal(body, &resp)
