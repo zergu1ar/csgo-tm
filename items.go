@@ -30,9 +30,19 @@ type (
 		Count   string `json:"count"`
 		MyCount string `json:"my_count"`
 	}
+	BuyOffersResponse struct {
+		Success   bool        `json:"success"`
+		BestOffer string      `json:"best_offer"`
+		Offers    []*BuyOffer `json:"offers"`
+	}
+	BuyOffer struct {
+		Price   string `json:"o_price"`
+		Count   string `json:"c"`
+		MyCount string `json:"my_count"`
+	}
 )
 
-func (mc *MarketClient) ItemHistory(classId string, instanceId string) (error, *ItemHistoryResponse) {
+func (mc *MarketClient) ItemHistory(classId, instanceId string) (error, *ItemHistoryResponse) {
 	err, body := mc.doRequest(
 		fmt.Sprintf("ItemHistory/%s_%s", classId, instanceId),
 		"",
@@ -46,7 +56,7 @@ func (mc *MarketClient) ItemHistory(classId string, instanceId string) (error, *
 	return err, &res
 }
 
-func (mc *MarketClient) ItemInfo(classId string, instanceId string, lang string) (error, *ItemInfoResponse) {
+func (mc *MarketClient) ItemInfo(classId, instanceId, lang string) (error, *ItemInfoResponse) {
 	err, body := mc.doRequest(
 		fmt.Sprintf("ItemInfo/%s_%s/%s", classId, instanceId, lang),
 		"",
@@ -56,6 +66,20 @@ func (mc *MarketClient) ItemInfo(classId string, instanceId string, lang string)
 		return err, nil
 	}
 	res := ItemInfoResponse{}
+	err = json.Unmarshal(body, &res)
+	return err, &res
+}
+
+func (mc *MarketClient) BuyOffers(classId, instanceId string) (error, *BuyOffersResponse) {
+	err, body := mc.doRequest(
+		fmt.Sprintf("BuyOffers/%s_%s", classId, instanceId),
+		"",
+		false,
+	)
+	if err != nil {
+		return err, nil
+	}
+	res := BuyOffersResponse{}
 	err = json.Unmarshal(body, &res)
 	return err, &res
 }

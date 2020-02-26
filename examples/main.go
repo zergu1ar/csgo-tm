@@ -57,4 +57,12 @@ func main() {
 	//for _, itemOffer := range itemInfo.Offers {
 	//	fmt.Println(itemOffer.Price, itemOffer.Count, itemOffer.MyCount)
 	//}
+	//err9, buyOffers := client.BuyOffers("3600642483", "143865972")
+	//if err9 != nil {
+	//	fmt.Println(err9)
+	//}
+	//fmt.Println(buyOffers.Success, buyOffers.BestOffer)
+	//for _, buyOffer := range buyOffers.Offers {
+	//	fmt.Println(buyOffer.Price, buyOffer.Count, buyOffer.MyCount)
+	//}
 }
