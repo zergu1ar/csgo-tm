@@ -17,8 +17,8 @@ type (
 		Success bool `json:"success"`
 	}
 	MyInventoryResponse struct {
-		Success bool            `json:"success"`
-		Items   []InventoryItem `json:"items"`
+		Success bool             `json:"success"`
+		Items   []*InventoryItem `json:"items"`
 	}
 	InventoryItem struct {
 		Id             string  `json:"id"`
