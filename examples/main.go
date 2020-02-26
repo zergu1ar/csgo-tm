@@ -41,4 +41,20 @@ func main() {
 	//	fmt.Println(err6)
 	//}
 	//fmt.Println(processedOrder.Success, processedOrder.Way, processedOrder.Price)
+	//err7, itemHistory := client.ItemHistory("3600642483", "143865972")
+	//if err7 != nil {
+	//	fmt.Println(err7)
+	//}
+	//fmt.Println(itemHistory.Success, itemHistory.Max, itemHistory.Min, itemHistory.Average, itemHistory.Number)
+	//for _, history := range itemHistory.History {
+	//	fmt.Println(history.Price, history.Time)
+	//}
+	//err8, itemInfo := client.ItemInfo("3600642483", "143865972", "en")
+	//if err8 != nil {
+	//	fmt.Println(err8)
+	//}
+	//fmt.Println(itemInfo.HashName, itemInfo.ClassId, itemInfo.InstanceId, itemInfo.MinPrice)
+	//for _, itemOffer := range itemInfo.Offers {
+	//	fmt.Println(itemOffer.Price, itemOffer.Count, itemOffer.MyCount)
+	//}
 }
