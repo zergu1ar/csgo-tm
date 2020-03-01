@@ -3,7 +3,6 @@ package csgo_tm
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 )
 
 type (
@@ -41,11 +40,11 @@ const (
 	ItemStatusNeedReceive   = 4
 )
 
-func (mc *MarketClient) AddToSale(item InventoryItem, price float64) (error, *AddToSaleResponse) {
+func (mc *MarketClient) AddToSale(item InventoryItem, price int) (error, *AddToSaleResponse) {
 	extraParams := "id=%s&price=%d&cur=%s"
 	err, body := mc.doRequest(
 		"add-to-sale",
-		fmt.Sprintf(extraParams, item.Id, int(math.Round(price))*100, mc.currency),
+		fmt.Sprintf(extraParams, item.Id, price, mc.currency),
 		true,
 	)
 	if err != nil {
@@ -56,10 +55,10 @@ func (mc *MarketClient) AddToSale(item InventoryItem, price float64) (error, *Ad
 	return err, &res
 }
 
-func (mc *MarketClient) SetPrice(itemId string, price float64) (error, *SetPriceResponse) {
+func (mc *MarketClient) SetPrice(itemId string, price int) (error, *SetPriceResponse) {
 	err, body := mc.doRequest(
 		"set-price",
-		fmt.Sprintf("item_id=%s&price=%d&cur=%s", itemId, int(math.Round(price))*100, mc.currency),
+		fmt.Sprintf("item_id=%s&price=%d&cur=%s", itemId, price, mc.currency),
 		true,
 	)
 	if err != nil {
