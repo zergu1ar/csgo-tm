@@ -102,7 +102,7 @@ func (mc *MarketClient) BuyOffers(classId, instanceId string) (error, *BuyOffers
 	return err, &res
 }
 
-func (mc *MarketClient) GetCSGOItems() (error, *[]CSGOItem) {
+func (mc *MarketClient) GetCSGOItems() (error, []*CSGOItem) {
 	res, err := http.Get(
 		"https://market.csgo.com/itemdb/current_730.json",
 	)
@@ -133,13 +133,13 @@ func (mc *MarketClient) GetCSGOItems() (error, *[]CSGOItem) {
 		return err, nil
 	}
 
-	var items []CSGOItem
+	var items []*CSGOItem
 	for idx, row := range data {
 		// skip header
 		if idx == 0 {
 			continue
 		}
-		items = append(items, CSGOItem{
+		items = append(items, &CSGOItem{
 			ClassId:    row[0],
 			InstanceId: row[1],
 			Rarity:     row[5],
@@ -150,5 +150,5 @@ func (mc *MarketClient) GetCSGOItems() (error, *[]CSGOItem) {
 			Image:      fmt.Sprintf("//cdn.csgo.com/item/%s/%s", url.QueryEscape(row[10]), "/300.png"),
 		})
 	}
-	return nil, &items
+	return nil, items
 }
