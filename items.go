@@ -1,8 +1,12 @@
 package csgo_tm
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 )
 
 type (
@@ -39,6 +43,20 @@ type (
 		Price   string `json:"o_price"`
 		Count   string `json:"c"`
 		MyCount string `json:"my_count"`
+	}
+	DbResponse struct {
+		Time string `json:"time"`
+		Db   string `json:"db"`
+	}
+	CSGOItem struct {
+		ClassId    string
+		InstanceId string
+		Rarity     string
+		Quality    string
+		Name       string
+		HashName   string
+		Color      string
+		Image      string
 	}
 )
 
@@ -82,4 +100,55 @@ func (mc *MarketClient) BuyOffers(classId, instanceId string) (error, *BuyOffers
 	res := BuyOffersResponse{}
 	err = json.Unmarshal(body, &res)
 	return err, &res
+}
+
+func (mc *MarketClient) GetCSGOItems() (error, *[]CSGOItem) {
+	res, err := http.Get(
+		"https://market.csgo.com/itemdb/current_730.json",
+	)
+	if err != nil {
+		return err, nil
+	}
+	defer res.Body.Close()
+	resBody, err := ioutil.ReadAll(res.Body)
+	itemsUrl := DbResponse{}
+	err = json.Unmarshal(resBody, &itemsUrl)
+	if err != nil {
+		return err, nil
+	}
+
+	// get request
+	csvDataUrl := fmt.Sprintf("https://market.csgo.com/itemdb/%s", itemsUrl.Db)
+	resp, err := http.Get(csvDataUrl)
+	if err != nil {
+		return err, nil
+	}
+
+	defer resp.Body.Close()
+
+	reader := csv.NewReader(resp.Body)
+	reader.Comma = ';'
+	data, err := reader.ReadAll()
+	if err != nil {
+		return err, nil
+	}
+
+	var items []CSGOItem
+	for idx, row := range data {
+		// skip header
+		if idx == 0 {
+			continue
+		}
+		items = append(items, CSGOItem{
+			ClassId:    row[0],
+			InstanceId: row[1],
+			Rarity:     row[5],
+			Quality:    row[6],
+			Name:       row[10],
+			HashName:   row[12],
+			Color:      row[13],
+			Image:      fmt.Sprintf("//cdn.csgo.com/item/%s/%s", url.QueryEscape(row[10]), "/300.png"),
+		})
+	}
+	return nil, &items
 }
