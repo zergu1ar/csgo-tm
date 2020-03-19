@@ -104,8 +104,12 @@ func (mc *MarketClient) doSyncRequest(url string, body io.Reader) RequestRespons
 
 	res, err := client.Do(req)
 	if err != nil {
+		code := 0
+		if res != nil {
+			code = res.StatusCode
+		}
 		return RequestResponse{
-			Status: res.StatusCode,
+			Status: code,
 			Error:  err,
 		}
 	}
