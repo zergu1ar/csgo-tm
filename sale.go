@@ -3,6 +3,7 @@ package csgo_tm
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 type (
@@ -28,10 +29,15 @@ type (
 		Position   int    `json:"position"`
 		Price      int    `json:"price"`
 		Currency   string `json:"currency"`
-		Status     int    `json:"status"`
+		Status     string `json:"status"`
 		LiveTime   int    `json:"live_time"`
 	}
 )
+
+func (i *Item) GetStatus() int {
+	itemStatus, _ := strconv.Atoi(i.Status)
+	return itemStatus
+}
 
 const (
 	ItemStatusInTrade       = 1
