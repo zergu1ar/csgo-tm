@@ -21,16 +21,16 @@ type (
 		Items   []*Item
 	}
 	Item struct {
-		Id         string `json:"item_id"`
-		AssetId    string `json:"assetid"`
-		ClassId    string `json:"classid"`
-		InstanceId string `json:"instanceid"`
-		HashName   string `json:"market_hash_name"`
-		Position   int    `json:"position"`
-		Price      int    `json:"price"`
-		Currency   string `json:"currency"`
-		Status     string `json:"status"`
-		LiveTime   int    `json:"live_time"`
+		Id         string  `json:"item_id"`
+		AssetId    string  `json:"assetid"`
+		ClassId    string  `json:"classid"`
+		InstanceId string  `json:"instanceid"`
+		HashName   string  `json:"market_hash_name"`
+		Position   int     `json:"position"`
+		Price      float32 `json:"price"`
+		Currency   string  `json:"currency"`
+		Status     string  `json:"status"`
+		LiveTime   int     `json:"live_time"`
 	}
 )
 

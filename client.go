@@ -91,7 +91,7 @@ func (mc *MarketClient) requestsWorker() {
 		select {
 		case req := <-mc.requestsQueue:
 			req.ResponseChan <- mc.doSyncRequest(req.Url, req.Body)
-			time.Sleep(time.Second)
+			time.Sleep(time.Millisecond * 300)
 		case <-mc.ctx.Done():
 			return
 		}
