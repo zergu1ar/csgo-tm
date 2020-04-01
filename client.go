@@ -17,6 +17,7 @@ type (
 		ctx           context.Context
 		Destroy       func()
 		currency      string
+		delay         int
 		requestsQueue chan RequestItem
 	}
 	RequestItem struct {
@@ -48,13 +49,14 @@ const (
 	CurrencyEUR = "EUR"
 )
 
-func NewClient(apiKey string, currency string, autoPing bool) *MarketClient {
+func NewClient(apiKey string, currency string, autoPing bool, delay int) *MarketClient {
 	ctx, cancel := context.WithCancel(context.Background())
 	client := &MarketClient{
 		ApiKey:        apiKey,
 		ctx:           ctx,
 		Destroy:       cancel,
 		currency:      currency,
+		delay:         delay,
 		requestsQueue: make(chan RequestItem, 100),
 	}
 	if autoPing {
@@ -91,7 +93,7 @@ func (mc *MarketClient) requestsWorker() {
 		select {
 		case req := <-mc.requestsQueue:
 			req.ResponseChan <- mc.doSyncRequest(req.Url, req.Body)
-			time.Sleep(time.Millisecond * 300)
+			time.Sleep(time.Millisecond * time.Duration(mc.delay))
 		case <-mc.ctx.Done():
 			return
 		}
